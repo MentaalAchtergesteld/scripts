@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+LANG_FILE=~/Scripts/.chtsh-languages
+CMD_FILE=~/Scripts/.chtsh-commands
+
+selected=$(cat "$LANG_FILE" "$CMD_FILE" | fzf --prompt="cht.sh > ")
+
+if [[ -z "$selected" ]]; then
+	exit 0
+fi
+
+read -rp "Enter Query: " query
+
+query_encoded=$(echo "$query" | tr ' ' '+')
+
+if grep -qsFx "$selected" "$LANG_FILE"; then
+	tmux new-window bash -c "curl cht.sh/$selected/$query_encoded; echo; echo 'Press Ctrl+C to exit'; while true; do sleep 86400; done"
+else
+	tmux new-window bash -c "curl -s cht.sh/$selected~$query | less"
+fi

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <output_file> <url>"
+    exit 1
+fi
+
+if ! yt-dlp -o ~/Music/$1.mp4 -f "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" $2; then
+    exit 1;
+fi
+
+if ! ffmpeg -i ~/Music/$1.mp4 ~/Music/$1.mp3; then
+    exit 1;
+fi
+
+rm ~/Music/$1.mp4
+
+echo "Succesfully downloaded $2 to ~/Music/$1.mp3"
+exit 0;

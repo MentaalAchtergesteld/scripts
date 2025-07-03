@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Check if a project directory is provided as an argument
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <project_dir> <project_name>"
+    exit 1
+fi
+
+# Set project directory and project name
+project_dir=$1
+project_name=${2:-$project_dir}
+
+# Check if the project directory already exists
+if [ -d "$project_dir" ]; then
+    read -p "The project directory '$project_dir' already exists. Do you want to proceed and overwrite existing files? (y/N): " choice
+    if [ "$choice" != "y" ]; then
+        echo "Aborting setup."
+        exit 1
+    fi
+fi
+
+# Create a new project directory
+mkdir -p $project_dir
+cd $project_dir
+
+# Install necessary dependencies
+echo "Installing webpack, webpack-cli, ts-loader, and typescript..."
+npm install webpack webpack-cli ts-loader typescript --save-dev
+
+# Create source directory and sample TypeScript file
+mkdir src
+echo "console.log('Hello, $project_name!');" > src/index.ts
+
+# Create a webpack configuration file
+echo 'const path = require("path");
+
+module.exports = {
+  mode: "none",
+  entry: "./src/index.ts",
+  output: {
+    path: path.resolve(__dirname, "dist"),
+    filename: "bundle.js"
+  },
+  resolve: {
+    extensions: [".ts", ".js"]
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: "ts-loader",
+        exclude: /node_modules/
+      }
+    ]
+  }
+};' > webpack.config.js
+
+# Create an index.html file with project name
+echo "<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>$project_name</title>
+</head>
+<body>
+    <h1>Hello, $project_name!</h1>
+    <script src='dist/bundle.js'></script>
+</body>
+</html>" > index.html
+
+# Create a package.json file
+echo '{
+  "name": "'$project_dir'",
+  "version": "1.0.0",
+  "description": "My TypeScript Project",
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch"
+  },
+  "devDependencies": {
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.0.0"
+  }
+}' > package.json
+
+npm install
+
+# Generate TypeScript configuration file
+echo "Generating tsconfig.json..."
+npx tsc --init
+
+npm run build
+
+# Inform the user that setup is complete
+echo "Project setup complete. Run 'npm run build' to build the project and 'npm run watch' to watch for changes."

@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+QUOTES_DIR=~/Scripts/.quotes
+
+usage() {
+	echo "Usage"
+	echo " $0 -r               # Choose a random quote from a random file in $QUOTES_DIR" 
+	echo " $0 -f               # Choose a random quote from a file in $QUOTES_DIR chosen with fzf" 
+	echo " $0 -s file1 [file2] # Choose a random quote from the supplied quote file(s) in $QUOTES_DIR"
+	exit 1
+}
+
+if [[ $# -eq 0 ]] then
+	usage
+fi
+
+mode=""
+files=()
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+		-r)
+			mode="random"
+			shift
+			;;
+		-f)
+			mode="fzf"
+			shift
+			;;
+		-s)
+			mode="specified"
+			shift
+
+			while [[ $# -gt 0 && $1 != ^- ]]; do
+				files+=("$1")
+				shift
+			done
+			;;
+		*)
+			echo "Unknown option: $1"
+			usage
+			;;
+	esac
+done
+
+case $mode in
+	random)
+		quote=$(find "$QUOTES_DIR" -type f -exec cat {} + | shuf -n 1)
+		echo "$quote"
+		;;
+	fzf)
+		file="$(find "$QUOTES_DIR" -mindepth 1 -maxdepth 1 -type f | fzf --prompt="Select quote file: ")"
+		if [[ ! -f $file ]]; then
+			echo "File not found: $file" >&2
+			exit 1
+		fi
+		echo "$(shuf -n 1 "$file")"
+		;;
+	specified)
+		if [[ ${#files[@]} -eq 0 ]]; then
+			echo "No files specified"
+			usage
+		fi
+
+		file="$QUOTES_DIR/.${files[RANDOM % ${#files[@]}]}"
+		echo "$(shuf -n 1 "$file")"
+		;;
+	*)
+		usage
+		;;
+esac
