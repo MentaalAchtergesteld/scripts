@@ -1,0 +1,11 @@
+#!/bin/env bash
+
+BACKGROUND_UTIL="swaybg"
+BACKGROUND_CMD="$BACKGROUND_UTIL -i"
+
+if [[ -z $1 ]]; then
+	echo "usage: back [file]"
+else
+	pkill "$BACKGROUND_UTIL"
+	nohup $($BACKGROUND_CMD "$1") >/dev/null 2>&1 &
+fi
