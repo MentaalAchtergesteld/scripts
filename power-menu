@@ -1,0 +1,21 @@
+#!/bin/env bash
+
+# choice=${printf "󰍃 Logout\n󰑓 Reboot\n󰐥 Shutdown\n" | wofi --dmenu --prompt "Power Menu"}
+
+	choice=$(printf "󰍃 Logout\n Shutdown\n Reboot\n" | \
+  wofi --dmenu --prompt "Power Menu")
+
+case "$choice" in
+	*Logout*)
+		hyprctl dispatch exit
+		;;
+	*Shutdown*)
+		systemctl poweroff
+		;;
+	*Reboot*)
+		systemctl reboot
+		;;
+	*)
+		exit 1
+		;;
+esac
