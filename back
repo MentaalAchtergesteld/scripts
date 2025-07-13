@@ -1,11 +1,19 @@
 #!/bin/env bash
 
+BACKGROUND_FILE="$XDG_CONFIG_HOME/background"
 BACKGROUND_UTIL="swaybg"
 BACKGROUND_CMD="$BACKGROUND_UTIL -i"
+DEFAULT_WALLPAPER="arch-black-4k.png"
 
-if [[ -z $1 ]]; then
-	echo "usage: back [file]"
-else
-	pkill "$BACKGROUND_UTIL"
-	nohup $($BACKGROUND_CMD "$1") >/dev/null 2>&1 &
+if [[ ! -f "$BACKGROUND_FILE" ]]; then
+	touch $BACKGROUND_FILE;
+	echo "BACKGROUND=$DEFAULT_WALLPAPER" > $BACKGROUND_FILE
 fi
+
+if [[ -n $1 ]]; then
+	echo "BACKGROUND=$1" > $BACKGROUND_FILE
+fi
+
+source $BACKGROUND_FILE
+pkill "$BACKGROUND_UTIL"
+nohup $($BACKGROUND_CMD "$BACKGROUND") >/dev/null 2>&1 &
