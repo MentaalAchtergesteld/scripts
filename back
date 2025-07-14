@@ -17,3 +17,5 @@ fi
 source $BACKGROUND_FILE
 pkill "$BACKGROUND_UTIL"
 nohup $($BACKGROUND_CMD "$BACKGROUND") >/dev/null 2>&1 &
+
+wal -i $BACKGROUND
