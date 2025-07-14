@@ -1,0 +1,11 @@
+#!/bin/env bash
+
+TMPFILE=$(mktemp --suffix=.png)
+
+grim -g "$(slurp)" "$TMPFILE"
+
+wl-copy < "$TMPFILE"
+
+notify-send "Screenshot" "Copied screenshot to clipboard" -i $TMPFILE
+
+(sleep 5 && rm "$TMPFILE") & disown
