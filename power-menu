@@ -3,7 +3,7 @@
 # choice=${printf "󰍃 Logout\n󰑓 Reboot\n󰐥 Shutdown\n" | wofi --dmenu --prompt "Power Menu"}
 
 	choice=$(printf "󰍃 Logout\n Shutdown\n Reboot\n" | \
-  wofi --dmenu --prompt "Power Menu")
+  wofi --insensitive --dmenu --prompt "Power Menu")
 
 case "$choice" in
 	*Logout*)

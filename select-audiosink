@@ -16,7 +16,7 @@ while read -r line; do
 done <<< "$sink_info"
 
 # Laat selectie zien
-choice=$(printf '%s\n' "${descriptions[@]}" | wofi --dmenu --prompt "Audio sink:")
+choice=$(printf '%s\n' "${descriptions[@]}" | wofi --insensitive --dmenu --prompt "Audio sink:")
 
 # Controleer of keuze is gemaakt
 if [[ -n "$choice" ]]; then

@@ -1,11 +1,10 @@
-
 #!/usr/bin/env bash
 
 choice=$(
   nmcli -t -f SSID dev wifi \
   | sed '/^$/d' \
   | sort -u \
-  | wofi --dmenu --prompt "Wi‑Fi:"
+  | wofi --insensitive --dmenu --prompt "Wi‑Fi:"
 )
 
 if [[ -n "$choice" ]]; then
