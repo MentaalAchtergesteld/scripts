@@ -1,0 +1,10 @@
+#!/bin/bash
+
+images=$(find /home/mentaal/Backgrounds/ -maxdepth 1 -type f -iregex '.*\.\(jpg\|jpeg\|png\|webp\)')
+
+selection=$(printf '%s\n' "${images[@]}" | wofi --dmenu --prompt "Choose a background:")
+
+if [[ -n $selection ]]; then
+	back $selection
+	tmux source-file /home/mentaal/.config/tmux/tmux.conf
+fi
