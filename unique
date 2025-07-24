@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+  echo "Usage: $0 <command...>"
+  exit 1
+fi
+
+CMD="$*"
+
+if pgrep -f "$CMD" | grep -v $$ > /dev/null; then
+	echo "Already running: $CMD"
+else
+	eval "$CMD" &
+fi
