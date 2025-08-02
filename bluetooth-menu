@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+get_icon() {
+	local icon_name=$1;
+	case $icon_name in
+		audio-headset)
+			echo "󰋋";;
+		input-mouse)
+			echo "󰍽";;
+	esac
+}
+
+get_battery() {
+	local level=$1;
+
+	case $level in
+		9[0-9]|100)    local icon="󰁹";;
+		7[0-9]|8[0-9]) local icon="󰂁";;
+		5[0-9]|6[0-9]) local icon="󰁾";;
+		3[0-9]|4[0-9]) local icon="󰁼";;
+		1[0-9]|2[0-9]) local icon="󰁺";;
+		*)             local icon="󰂃";;
+	esac
+
+	if [ -n "$level" ]; then
+		echo "$icon $level%"
+	else
+		echo ""	
+	fi
+}
+
+get_connected() {
+	local info=$1;
+
+	local name=$(echo "$info" | awk -F': ' '/Name/ {print $2}')
+
+	local battery_level=$(echo "$info" | awk -F': ' '/Battery/ {print $2}' | sed -n 's/.*(\([0-9]\+\)).*/\1/p')
+	local battery=$(get_battery "$battery_level");
+
+	local icon_name=$(echo "$info" | awk -F': ' '/Icon/ {print $2}')
+	local icon=$(get_icon "$icon_name")
+
+	echo "$icon  $name $battery"
+}
+
+get_paired() {
+	local info=$1;
+	
+	local name=$(echo "$info" | awk -F': ' '/Name/ {print $2}')
+	local icon_name=$(echo "$info" | awk -F': ' '/Icon/ {print $2}')
+	local icon=$(get_icon "$icon_name")
+
+	echo "$icon $name"
+
+}
+
+connected=()
+paired=()
+
+while read -r line; do
+	uuid=$(echo $line | cut -f2 -d' ')
+
+	info=$(bluetoothctl info $uuid);
+	is_connected=$(echo "$info" | awk -F': ' '/Connected/ {print $2}')
+
+	case $is_connected in
+		yes)
+			connected+=("$(get_connected "$info") ($uuid)");;
+		no)
+			paired+=("$(get_paired "$info") ($uuid)");;
+	esac
+done < <(bluetoothctl devices | grep 'Device')
+
+
+menu=()
+menu+=("= Connected =")
+for device in "${connected[@]}"; do
+	menu+=("$device")
+done
+
+menu+=("= Paired =")
+for device in "${paired[@]}"; do
+	menu+=("$device")
+done
+
+chosen=$(printf '%s\n' "${menu[@]}" | wofi --insensitive --dmenu --sort-order=default --prompt "Bluetooth devices:")
+
+in_array() {
+    local item=$1
+    shift
+    local arr=("$@")
+    for element in "${arr[@]}"; do
+        if [[ "$element" == "$item"* ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+if [ -n "$chosen" ]; then
+	case $chosen in
+		"= Connected =" | "= Paired =") exit 1;;
+		*)
+			chosen_mac=$(echo "$chosen" | awk -F'[()]' '{print $(NF-1)}')
+			if in_array "$chosen" "${connected[@]}"; then
+				bluetoothctl disconnect "$chosen_mac"
+			else
+				bluetoothctl connect "$chosen_mac"
+			fi
+			;;
+	esac
+fi
